@@ -3,7 +3,27 @@ guid: 4a119e3ed72661245a750c80dc8477a0
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BombBox
+    second: {fileID: 2100000, guid: 1030a7f86234393468b192c8af959963, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BombMaterial1
+    second: {fileID: 2100000, guid: 93a58cfd71f513644b3a1e0a28e6689b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BombMaterial2
+    second: {fileID: 2100000, guid: 2a34e329a00fd934587d2576b0904ae5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BombMaterial3
+    second: {fileID: 2100000, guid: c2bc4485726709e40b36cd01bbc4a972, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

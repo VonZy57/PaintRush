@@ -33,6 +33,7 @@ public abstract class WeaponBase : NetworkBehaviour
     [Header("Ses Efektleri")]
     public AudioSource weaponAudioSource; // Sesi çalacak kaynak
     public AudioClip shootSound; // Patlama sesi
+    [Range(0f, 1f)] public float shootVolume = 1f; // Sesin şiddeti (0: Sessiz, 1: Maksimum)
 
     protected float nextTimeToFire = 0f;
 
@@ -42,6 +43,24 @@ public abstract class WeaponBase : NetworkBehaviour
     private void Start()
     {
         _initialLocalRot = transform.localEulerAngles;
+
+        // Silah sesinin otomatik olarak 3D ayarlanması
+        if (weaponAudioSource != null)
+        {
+            if (IsOwner)
+            {
+                // Kendi silahımızsa 2D (0) yapıyoruz ki sesi her iki kulaktan eşit ve tok duyalım
+                weaponAudioSource.spatialBlend = 0f;
+            }
+            else
+            {
+                // Başkasının silahıysa tamamen 3D (1) yapıyoruz ki yönünü ve mesafesini anlayalım
+                weaponAudioSource.spatialBlend = 1f; 
+                weaponAudioSource.rolloffMode = AudioRolloffMode.Linear; 
+                weaponAudioSource.minDistance = 3f; 
+                weaponAudioSource.maxDistance = 60f; 
+            }
+        }
     }
 
     public void Refill()
@@ -209,7 +228,7 @@ public abstract class WeaponBase : NetworkBehaviour
     //[Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     private void PlayShootVisualsRpc(Vector3 endPoint, Vector3 hitNormal, bool spawnDecal, RpcParams rpcParams = default)
     {
-        if (weaponAudioSource != null && shootSound != null) weaponAudioSource.PlayOneShot(shootSound);
+        if (weaponAudioSource != null && shootSound != null) weaponAudioSource.PlayOneShot(shootSound, shootVolume);
 
         // Muzzle flash sadece silahın sahibinde (Owner) görünsün
         if (IsOwner)

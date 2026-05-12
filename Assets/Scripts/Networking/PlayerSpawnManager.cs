@@ -34,6 +34,12 @@ public class PlayerSpawnManager : NetworkBehaviour
 
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
+            // Garanti olması adına, oyuncunun hali hazırda bir karakteri varsa önce onu siliyoruz
+            if (client.PlayerObject != null)
+            {
+                client.PlayerObject.Despawn(true);
+            }
+
             int team = GetTeamForClient(client.ClientId);
             GameObject prefab;
             Vector3 spawnPos = Vector3.zero; // Eğer spawn noktası yoksa haritanın ortasına atsın

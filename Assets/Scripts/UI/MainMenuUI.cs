@@ -13,6 +13,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] private GameObject lobbyPanel;
 
     [Header("Menu")]
+    [SerializeField] private TMP_InputField playerNameInputField; // Oyuncunun ismini gireceği alan
     [SerializeField] private Button hostButton;
     [SerializeField] private TMP_InputField joinCodeInputField;
     [SerializeField] private Button joinButton;
@@ -45,6 +46,13 @@ public class MainMenuUI : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        // Kayıtlı bir oyuncu ismi varsa yükle, yoksa rastgele bir isim ata
+        if (playerNameInputField != null)
+        {
+            playerNameInputField.text = PlayerPrefs.GetString("PlayerName", "Oyuncu " + Random.Range(1000, 9999));
+            playerNameInputField.onValueChanged.AddListener((val) => PlayerPrefs.SetString("PlayerName", val));
+        }
+
         hostButton.onClick.AddListener(OnHostClicked);
         joinButton.onClick.AddListener(OnJoinClicked);
         disconnectButton.onClick.AddListener(OnDisconnectClicked);
@@ -57,6 +65,14 @@ public class MainMenuUI : MonoBehaviour
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsClient)
         {
             ShowLobby();
+
+            // Oyundan lobiye dönüldüğünde OnClientConnected tekrar çalışmaz.
+            // Bu yüzden UI listesini güncel tutacak olayı (event) buradan yeniden dinlemeye başlamalıyız.
+            if (NetworkLobbyManager.Instance != null)
+            {
+                NetworkLobbyManager.Instance.LobbyPlayers.OnListChanged += OnLobbyPlayersChanged;
+            }
+
             UpdatePlayerListUI();
             if (NetworkManager.Singleton.IsServer) UpdatePlayerCount();
             if (startGameButton) startGameButton.gameObject.SetActive(NetworkManager.Singleton.IsServer);
@@ -78,6 +94,13 @@ public class MainMenuUI : MonoBehaviour
         if (NetworkManager.Singleton == null) return;
         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
+
+        // Sahne değişirken (oyuna geçerken) hafıza sızıntısı ve hata olmaması için
+        // UI objesi silinirken listeyi dinlemeyi bırakıyoruz.
+        if (NetworkLobbyManager.Instance != null)
+        {
+            NetworkLobbyManager.Instance.LobbyPlayers.OnListChanged -= OnLobbyPlayersChanged;
+        }
     }
 
     // ── Buton işlemleri ───────────────────────────────────────────────────
@@ -215,6 +238,12 @@ public class MainMenuUI : MonoBehaviour
         {
             if (NetworkLobbyManager.Instance != null)
             {
+                // Sunucuya ismimizi iletiyoruz
+                string myName = playerNameInputField != null && !string.IsNullOrWhiteSpace(playerNameInputField.text) 
+                    ? playerNameInputField.text 
+                    : "Gizemli Oyuncu";
+                NetworkLobbyManager.Instance.SetPlayerNameRpc(myName);
+
                 NetworkLobbyManager.Instance.LobbyPlayers.OnListChanged += OnLobbyPlayersChanged;
                 UpdatePlayerListUI(); // Bağlanır bağlanmaz listeyi bir kez çiz
             }

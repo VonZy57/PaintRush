@@ -68,6 +68,14 @@ public class FPSController : NetworkBehaviour
     public float recoilReturnDuration = 0.25f; // Namlunun eski yerine ne kadar hızlı döneceği
     private Vector3 _currentRecoil;
 
+    [Header("Adım Sesleri (Footsteps)")]
+    public AudioSource footstepAudioSource;
+    public AudioClip[] footstepSounds;
+    public float walkStepInterval = 0.5f;
+    public float sprintStepInterval = 0.3f;
+    [Range(0f, 1f)] public float footstepVolume = 1f;
+    private float _footstepTimer = 0f;
+
     private InteractableSwitch _currentSwitch;
     private BombController _currentBomb;
     private bool _isInteracting;
@@ -88,6 +96,22 @@ public class FPSController : NetworkBehaviour
             if (cam != null) playerCamera = cam.transform;
         }
         
+        // Adım seslerinin otomatik olarak 3D ayarlanması
+        if (footstepAudioSource != null)
+        {
+            if (IsOwner)
+            {
+                footstepAudioSource.spatialBlend = 0f; // Kendi adımımızı 2D duyalım
+            }
+            else
+            {
+                footstepAudioSource.spatialBlend = 1f; // Başkalarının adımı tam 3D
+                footstepAudioSource.rolloffMode = AudioRolloffMode.Linear;
+                footstepAudioSource.minDistance = 2f;
+                footstepAudioSource.maxDistance = 30f;
+            }
+        }
+
         networkWeaponIndex.OnValueChanged += OnWeaponChanged;
         ApplyWeaponVisuals(networkWeaponIndex.Value); // Herkes diğer oyuncuların güncel silahını görebilsin
 
@@ -297,6 +321,21 @@ public class FPSController : NetworkBehaviour
         bool isSprinting = sprintInput.action.IsPressed();
         float currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
         _controller.Move(move * currentSpeed * Time.deltaTime);
+
+        // Adım sesi mantığı
+        if (_isGrounded && moveValue.magnitude > 0.1f)
+        {
+            _footstepTimer -= Time.deltaTime;
+            if (_footstepTimer <= 0f)
+            {
+                _footstepTimer = isSprinting ? sprintStepInterval : walkStepInterval;
+                PlayFootstepRpc();
+            }
+        }
+        else
+        {
+            _footstepTimer = 0f; // Durduğunda sıfırla ki harekete geçince anında ses çıksın
+        }
     }
 
     private void HandleJump()
@@ -310,6 +349,16 @@ public class FPSController : NetworkBehaviour
         // Yerçekimini uygula
         _velocity.y += gravity * Time.deltaTime;
         _controller.Move(_velocity * Time.deltaTime);
+    }
+
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Owner)]
+    private void PlayFootstepRpc(RpcParams rpcParams = default)
+    {
+        if (footstepAudioSource != null && footstepSounds != null && footstepSounds.Length > 0)
+        {
+            AudioClip clip = footstepSounds[Random.Range(0, footstepSounds.Length)];
+            footstepAudioSource.PlayOneShot(clip, footstepVolume);
+        }
     }
 
     // ── ETKİLEŞİM (INTERACT) ─────────────────────────────────────────────
@@ -583,7 +632,24 @@ public class FPSController : NetworkBehaviour
 
         Transform origin = grenadeThrowOrigin != null ? grenadeThrowOrigin : playerCamera;
         Vector3 spawnPos = origin.position + origin.forward * 0.5f;
-        Vector3 throwDir = origin.forward;
+        
+        // Kameranın merkezinden ileriye doğru bir ışın göndererek nişan alınan noktayı bul
+        Ray ray = new Ray(playerCamera.position, playerCamera.forward);
+        Vector3 targetPoint;
+        
+        // Işın bir yere çarpıyorsa (duvar, zemin veya düşman), hedef o noktadır
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, shootLayer))
+        {
+            targetPoint = hit.point;
+        }
+        else
+        {
+            // Işın hiçbir şeye çarpmıyorsa (havaya atılıyorsa), ileride uzak bir noktayı hedefle
+            targetPoint = ray.GetPoint(100f);
+        }
+
+        // Çıkış noktasından hedef noktaya olan yönü hesapla
+        Vector3 throwDir = (targetPoint - spawnPos).normalized;
 
         ThrowGrenadeRpc((int)type, spawnPos, throwDir);
     }

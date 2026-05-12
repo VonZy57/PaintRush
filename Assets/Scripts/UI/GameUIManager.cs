@@ -139,7 +139,11 @@ public class GameUIManager : MonoBehaviour
         flashOverlay.DOKill();
         flashOverlay.gameObject.SetActive(true);
         flashOverlay.color = Color.white;
-        flashOverlay.DOFade(0f, duration).SetEase(Ease.InQuad)
+        
+        float fadeOutTime = 1f; // Son 1 saniyede yavaşça yok olsun
+        float solidTime = Mathf.Max(0f, duration - fadeOutTime); // Geri kalan sürede tam beyaz kalsın
+
+        flashOverlay.DOFade(0f, fadeOutTime).SetDelay(solidTime).SetEase(Ease.InOutQuad)
             .OnComplete(() => flashOverlay.gameObject.SetActive(false));
     }
 

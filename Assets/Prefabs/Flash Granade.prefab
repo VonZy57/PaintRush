@@ -69,9 +69,9 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -4793216317889526321, guid: 9051939231a94894eb8cfdbfee7a3ea1, type: 3}
-  - {fileID: -1120802961590704137, guid: 9051939231a94894eb8cfdbfee7a3ea1, type: 3}
-  - {fileID: 3291784336895184425, guid: 9051939231a94894eb8cfdbfee7a3ea1, type: 3}
+  - {fileID: 2100000, guid: b06845501cf7f1a448db1161aac492c6, type: 2}
+  - {fileID: 2100000, guid: 15c77aae36d89994689225af80969dee, type: 2}
+  - {fileID: 2100000, guid: 9fae4596620c0df449e705e60973a17e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -133,9 +133,9 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 0
   AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 0
-  RotationInterpolationType: 0
-  ScaleInterpolationType: 0
+  PositionInterpolationType: 1
+  RotationInterpolationType: 1
+  ScaleInterpolationType: 1
   PositionLerpSmoothing: 1
   PositionMaxInterpolationTime: 0.1
   RotationLerpSmoothing: 1
@@ -190,7 +190,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!135 &3079291226212222421
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -227,8 +227,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   fuseTime: 1
   throwForce: 20
-  flashRadius: 12
-  flashDuration: 5
+  flashRadius: 30
+  flashDuration: 4
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -236,3 +236,4 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967169
   flashSound: {fileID: 8300000, guid: 5c20300b8aa9cb6499471cfa992910df, type: 3}
+  flashVolume: 0.4

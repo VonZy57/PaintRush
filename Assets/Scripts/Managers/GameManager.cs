@@ -64,7 +64,28 @@ public class GameManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            // Oyun sahnesi yüklendiğinde hazırlık evresini başlat
+            // Şimdilik "Oyuncular Bekleniyor" aşamasında kal
+            CurrentState.Value = GameState.WaitingForPlayers;
+            
+            // Bütün oyuncuların (Client'ların) sahneyi tam olarak yüklemesini dinle
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += OnAllClientsLoadedScene;
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        if (IsServer && NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+        {
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= OnAllClientsLoadedScene;
+        }
+    }
+
+    private void OnAllClientsLoadedScene(string sceneName, UnityEngine.SceneManagement.LoadSceneMode loadSceneMode, System.Collections.Generic.List<ulong> clientsCompleted, System.Collections.Generic.List<ulong> clientsTimedOut)
+    {
+        // Yüklenen sahne bu oyun sahnesiyse maçı güvenle başlatabiliriz
+        if (sceneName == gameObject.scene.name)
+        {
+            Debug.Log($"[GameManager] Tüm oyuncular sahneyi (ve shaderları) yükledi. {clientsCompleted.Count} oyuncu hazır. Maç başlıyor!");
             StartPreRound();
         }
     }
@@ -216,6 +237,13 @@ public class GameManager : NetworkBehaviour
     private void TriggerMapExplosionRpc()
     {
         StartCoroutine(MapMaterialSwapRoutine());
+
+        // Haritadaki ana bombayı bul ve sesini çal
+        BombController[] bombs = FindObjectsByType<BombController>(FindObjectsSortMode.None);
+        foreach (var bomb in bombs)
+        {
+            if (bomb != null) bomb.PlayExplosionSound();
+        }
     }
 
     private IEnumerator MapMaterialSwapRoutine()
@@ -282,6 +310,16 @@ public class GameManager : NetworkBehaviour
         
         if (IsServer && NetworkManager.Singleton.SceneManager != null)
         {
+            // 2. SORUNUN ÇÖZÜMÜ: Lobiye dönmeden önce tüm oyuncu karakterlerini yok et.
+            // Karakterler lobi sahnesine taşınmaz ve bir sonraki maçta çiftlenmezler.
+            foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+            {
+                if (client.PlayerObject != null)
+                {
+                    client.PlayerObject.Despawn(true);
+                }
+            }
+
             NetworkManager.Singleton.SceneManager.LoadScene(lobbySceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
         }
     }

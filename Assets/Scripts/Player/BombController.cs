@@ -9,6 +9,11 @@ public class BombController : NetworkBehaviour
     [Header("Etkileşim Ayarları")]
     public float defuseDuration = 7f; // İmha süresi daha uzun (örneğin 7 saniye) olabilir
 
+    [Header("Ses Ayarları")]
+    public AudioSource audioSource;
+    public AudioClip explosionSound;
+    [Range(0f, 1f)] public float explosionVolume = 1f;
+
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SetDefusingRpc(bool state, RpcParams rpcParams = default)
     {
@@ -35,5 +40,14 @@ public class BombController : NetworkBehaviour
     public void ResetBomb()
     {
         if (IsServer) { isDefused.Value = false; isBeingDefused.Value = false; }
+    }
+
+    public void PlayExplosionSound()
+    {
+        if (audioSource != null && explosionSound != null)
+        {
+            audioSource.spatialBlend = 0f; // 3D olmasına gerek yok, tamamen 2D olarak çalsın
+            audioSource.PlayOneShot(explosionSound, explosionVolume);
+        }
     }
 }

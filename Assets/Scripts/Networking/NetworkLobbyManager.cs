@@ -32,6 +32,9 @@ public class NetworkLobbyManager : NetworkBehaviour
     // 2. Senkronize Liste (İçinde bir değişiklik olduğunda otomatik olarak tüm Client'lara yansır)
     public NetworkList<LobbyPlayerState> LobbyPlayers;
 
+    // Benzersiz oyuncu isimleri oluşturmak için bir sayaç
+    private int _playerJoinedCounter = 0;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -52,9 +55,19 @@ public class NetworkLobbyManager : NetworkBehaviour
     {
         if (IsServer)
         {
+            // 1. SORUNUN ÇÖZÜMÜ: Eski oturumdan kalan oyuncu listesini temizle
+            LobbyPlayers.Clear();
+            _playerJoinedCounter = 0;
+
             // Yeni oyuncular katıldıkça veya koptukça listeyi güncellemek için dinleyiciler
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+
+            // Host'un kendisi (veya önceden bağlanmış olanlar) için listeye ekleme yap
+            foreach (var clientId in NetworkManager.Singleton.ConnectedClientsIds)
+            {
+                AddPlayerToList(clientId);
+            }
         }
     }
 
@@ -83,18 +96,43 @@ public class NetworkLobbyManager : NetworkBehaviour
 
     private void AddPlayerToList(ulong clientId)
     {
+        // Eğer bu oyuncu (ClientId) zaten listedeyse, mükerrer eklemeyi engelle
+        for (int i = 0; i < LobbyPlayers.Count; i++)
+        {
+            if (LobbyPlayers[i].ClientId == clientId)
+                return;
+        }
+
         // 3. Sıraya göre isimlendirme (Player 1, Player 2 vb.)
-        int playerIndex = LobbyPlayers.Count + 1;
+        _playerJoinedCounter++;
             
         LobbyPlayers.Add(new LobbyPlayerState
         {
             ClientId = clientId,
-            PlayerName = $"Player {playerIndex}",
+            PlayerName = $"Player {_playerJoinedCounter}",
             TeamId = 0 // Başlangıçta tarafsız
         });
     }
 
-    // 4. Takım Seçimi (Client'lar Host'a takım seçtiklerini bu metodla bildirir)
+    // 4. İsim Belirleme (Client'lar bağlandığında kendi belirledikleri ismi sunucuya iletir)
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetPlayerNameRpc(string playerName, RpcParams rpcParams = default)
+    {
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
+
+        for (int i = 0; i < LobbyPlayers.Count; i++)
+        {
+            if (LobbyPlayers[i].ClientId == senderClientId)
+            {
+                var updatedPlayer = LobbyPlayers[i];
+                updatedPlayer.PlayerName = playerName;
+                LobbyPlayers[i] = updatedPlayer; // Struct'ı güncelle
+                break;
+            }
+        }
+    }
+
+    // 5. Takım Seçimi (Client'lar Host'a takım seçtiklerini bu metodla bildirir)
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SelectTeamRpc(int teamId, RpcParams rpcParams = default)
     {
@@ -112,7 +150,7 @@ public class NetworkLobbyManager : NetworkBehaviour
         }
     }
 
-    // 5. Başlatma Kontrolü (Herkes takım seçti mi ve takımlar eşit mi?)
+    // 6. Başlatma Kontrolü (Herkes takım seçti mi ve takımlar eşit mi?)
     public bool CanStartGame(out string errorMessage)
     {
         errorMessage = "";

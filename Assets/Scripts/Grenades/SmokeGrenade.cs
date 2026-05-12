@@ -10,6 +10,7 @@ public class SmokeGrenade : GrenadeBase
     [Header("Görsel Efektler")]
     public GameObject smokeVolumePrefab;
     public AudioClip deploySound;
+    [Range(0f, 1f)] public float deployVolume = 1f; // Fıslama/Açılma sesi seviyesi
 
     protected override void OnExplode(Vector3 position)
     {
@@ -31,7 +32,7 @@ public class SmokeGrenade : GrenadeBase
                 .OnComplete(() => Destroy(smokeObj));
         }
 
-        if (deploySound != null)
-            AudioSource.PlayClipAtPoint(deploySound, position);
+        // Sesi 40 metreye kadar duyulur
+        Play3DSound(deploySound, position, 40f, deployVolume);
     }
 }

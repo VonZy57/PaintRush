@@ -67,4 +67,22 @@ public abstract class GrenadeBase : NetworkBehaviour
 
     // Tüm clientlarda: görsel ve ses efektleri
     protected virtual void OnExplodeVisual(Vector3 position) { }
+
+    // 3D Ses oynatmak için özel yardımcı metod
+    protected void Play3DSound(AudioClip clip, Vector3 position, float maxDistance = 50f, float volume = 1f)
+    {
+        if (clip == null) return;
+        
+        GameObject go = new GameObject("3D_Sound_" + clip.name);
+        go.transform.position = position;
+        AudioSource source = go.AddComponent<AudioSource>();
+        source.clip = clip;
+        source.spatialBlend = 1f; // Tamamen 3D
+        source.volume = volume; // Editörden belirlenen ses seviyesi
+        source.rolloffMode = AudioRolloffMode.Linear; // Uzaklaştıkça sesi doğrusal kıs
+        source.minDistance = 5f; // Sesi tam duyacağımız minimum mesafe
+        source.maxDistance = maxDistance; // Sesin tamamen kaybolacağı sınır
+        source.Play();
+        Destroy(go, clip.length + 0.1f); // Ses bitince objeyi yok et
+    }
 }

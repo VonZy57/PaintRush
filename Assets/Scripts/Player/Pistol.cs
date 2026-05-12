@@ -5,7 +5,7 @@ public class Pistol : WeaponBase
     private void Awake()
     {
         weaponName = "Tabanca";
-        damage = 15;
+        damage = 30;
         range = 50f;
         fireRate = 5f; // Saniyede 5 mermi (oyuncu hızlı tıklarsa)
         isAutomatic = false; // Sadece her tıklamada 1 kez sıkar

@@ -69,9 +69,9 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -4793216317889526321, guid: 9051939231a94894eb8cfdbfee7a3ea1, type: 3}
-  - {fileID: -1120802961590704137, guid: 9051939231a94894eb8cfdbfee7a3ea1, type: 3}
-  - {fileID: 3291784336895184425, guid: 9051939231a94894eb8cfdbfee7a3ea1, type: 3}
+  - {fileID: 2100000, guid: 54e6ae2961efa7948976fe5d5e6d2c4c, type: 2}
+  - {fileID: 2100000, guid: f268a6a235a56d34a9aba70db38354b1, type: 2}
+  - {fileID: 2100000, guid: 0563a834b19f2374387c6ade039e930a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -112,7 +112,7 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -133,9 +133,9 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 0
   AutoOwnerAuthorityTickOffset: 1
-  PositionInterpolationType: 0
-  RotationInterpolationType: 0
-  ScaleInterpolationType: 0
+  PositionInterpolationType: 1
+  RotationInterpolationType: 1
+  ScaleInterpolationType: 1
   PositionLerpSmoothing: 1
   PositionMaxInterpolationTime: 0.1
   RotationLerpSmoothing: 1
@@ -190,7 +190,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 2
 --- !u!135 &5248010090336036126
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -227,11 +227,20 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   fuseTime: 2
   throwForce: 20
-  explosionRadius: 7
-  maxDamage: 150
+  explosionRadius: 12
+  maxDamage: 120
   playerLayer:
     serializedVersion: 2
-    m_Bits: 65
+    m_Bits: 64
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 4294967169
   decalPrefab: {fileID: 6702140795818673225, guid: d26b0d6c419922e438d176365846977b, type: 3}
+  decalPlacementLayer:
+    serializedVersion: 2
+    m_Bits: 4294967232
   decalLifetime: 10
   explosionSound: {fileID: 8300000, guid: 5ae74936f69e3334dac7685e345ae8e0, type: 3}
+  explosionVolume: 0.4
+  showDebugSphere: 0
+  debugSphereLifetime: 2

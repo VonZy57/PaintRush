@@ -3,7 +3,22 @@ guid: 9051939231a94894eb8cfdbfee7a3ea1
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: GranadeMaterial1
+    second: {fileID: 2100000, guid: f268a6a235a56d34a9aba70db38354b1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: GranadeMaterial2
+    second: {fileID: 2100000, guid: 54e6ae2961efa7948976fe5d5e6d2c4c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: GranadeMaterial4
+    second: {fileID: 2100000, guid: 0563a834b19f2374387c6ade039e930a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
